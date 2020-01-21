@@ -1,4 +1,4 @@
-## Final Project Data Mining
+## Final Project Data Mining: What features lead to higher Airbnb rental prices in Florence, Italy? 
 
 The folder contains Code and Report submitted.Software involved for coding is PyCharm Professional.
 
