@@ -4,5 +4,7 @@ The project aims to build a movie recommendation engine based on content based a
 
 ## Link to the datasets
 https://grouplens.org/datasets/movielens/100k/
+
 https://www.kaggle.com/prajitdatta/movielens-100k-dataset/
+
 https://www.kaggle.com/rounakbanik/the-movies-dataset
