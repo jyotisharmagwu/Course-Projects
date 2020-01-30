@@ -1,6 +1,5 @@
 ---
 title: 'DATS 6101 Project 1:  The Effects of social background and Social Support on High School Students'' Math Achievement'
-author: "Group D: Duan, Xuejing, Chen Chen, Sharma Jyoti, Hindwan Tanvi "
 date: "March 20, 2019"
 output:
   html_document:
