@@ -1,6 +1,5 @@
 ---
 title: "High school students and their future predictions"
-author: Hindwan Tanvi, Duan Xuejing, Chen Chen, Sharma Jyoti
 date: April 27, 2019
 output: 
   html_document:
