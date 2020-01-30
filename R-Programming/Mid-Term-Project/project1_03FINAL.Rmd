@@ -1,0 +1,641 @@
+---
+title: 'DATS 6101 Project 1:  The Effects of social background and Social Support on High School Students'' Math Achievement'
+author: "Group D: Duan, Xuejing, Chen Chen, Sharma Jyoti, Hindwan Tanvi "
+date: "March 20, 2019"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+```
+
+```{r echo=FALSE, message=FALSE}
+#install and load required packages
+loadPkg = function(x) { if (!require(x,character.only=T, quietly =T)) { install.packages(x,dep=T,repos="http://cran.us.r-project.org"); if(!require(x,character.only=T)) stop("Package not found") } }
+
+loadPkg("readxl")
+loadPkg("ggplot2")
+loadPkg("dplyr")
+loadPkg("corrplot")
+loadPkg("data.table")
+loadPkg("RColorBrewer")
+loadPkg("plotly")
+loadPkg("faraway")
+```
+
+
+```{r echo=FALSE, message=FALSE}
+library("readxl")
+library("ggplot2")
+library("dplyr")
+library("corrplot")
+library("data.table")
+library("RColorBrewer")
+library("plotly")
+library("faraway")
+```
+
+```{r echo=FALSE, message=FALSE}
+#Load in our data and create a dataframe
+df <- read_excel("hslsmath.xls", sheet = "data")
+```
+
+# Chapter 1: Introduction
+The topic of how to promote mathematics learning has concerned educators and policy makers for decades. The low math achievement of U.S. students is a matter of grave concern to educators, parents, and policy makers. A strong mathematical background is important for admission to many college majors, most professional occupations, and many computer-based technical occupations as well. More importantly, mathematics as the most basic pillar of STEM fields (science, technology, engineering, and math) is associated with the global competitiveness and economic leadership of a country. Additionally, it is surprising to know that high school math course taking predicts individuals’ future career outcomes: more high-level math courses taking, the better labor market outcomes. Rose and Betts’s (2004) study showed that high school students’ math achievement is a strong indicator of students' earnings around 10 years later after controlling for demographic, family, school characteristics, highest educational degree acquired, college major, and career. These researchers also pointed out that more advanced math courses (e.g., algebra/geometry) have a stronger influence on students’ earnings than those less advanced ones. Similar results in James (2013) showed that among individuals who have the same level of education degree, those who take more math courses, especially advanced ones in high school, are more likely to obtain a job, and have higher salaries on average. These findings provide insights for policy makers to narrow the earnings gap among racial and socioeconomic groups by enriching the math curriculum and encouraging low-income parents and students to invest in more math courses in high school.
+
+#Chapter 2: Description of Data
+##2.1 Source Data
+For the current research, data were drawn from the National Center of Education Statistics (NCES) High School Longitudinal Study of 2009 (HSLS: 09), which was the fifth in a series of longitudinal studies. HSLS:09 provides insights into students' educational trajectories from the beginning of high school to the postsecondary options, to the work choices, and to early adult life. Particularly, it investigates the paths into and out of STEM fields as well as the educational and social experiences that affects these changes (Ingels et al., 2011). HSLS: 09 is a nationally representative study, which collected data across all 50 states and the District of Columbia. The HSLS:09 base year data were collected in the 2009-10 school year, which randomly sampled more than 23,000 ninth graders in 944 public and private schools (Ingels et al., 2011). The first follow-up wave took place in the Spring of 2012 when most sampled students were in their junior year (11th grade). This 2012 data were used in the current study because the 11th grade is a very important high school year for college admission, as well as for exploring the dynamics of educational and career decision-making. A 2013 postsecondary update provides the cohort’s college major choices and plans. 
+A two-stage sampling process was used for data collection in the HSLS:09 study. In the first stage, 1,889 sampled schools were recruited from 50 states and the District of Columbia using stratified sampling, which finally resulted in a total of 944 schools. In the second stage, students were randomly sampled with more than twenty thousand participants. On average, about 28 ninth-grade students were selected from each participating schools. During the student selection stage, students were recruited by the student’s race/ethnicity (Hispanic, Asian, Black, and Other) specified by the school using stratum-specific sampling. Asian students were a little oversampled from each participating school (Ingels et al., 2011). During the year of 2012, student data were collected in 904 of the 939 high schools and included responses from a 35- minute questionnaire and a 40-minute online mathematics assessment. Parents, principals, mathematics and science teachers, and schools' lead counselors also took surveys via web or phone.
+
+
+##2.2 data cleaning and data structure
+The HSLS:09 dataset was sourced from National Center for Edcuation Statistics website.This data was retrieved and aggregated using SPSS prior to the start of this project.The dataset contains over 23,000 records of the students with student id, maths standardized theta score, student's sex, race/ethnicity, GPA of subjects like english, science, social science and many more, student expectations, parents expectations. All rows contain missing data. However, a large number of nonresponse (or missing data) is often encountered in large-scale surveys (Madden et al., 2017).Since the missing values are unrelated to the variables of interest, complete case deletion (listwise deletion) was used in the current study to remove all data for a case that has one or more missing values. Some selected items have been reverse recoded in order to align with other scales and keep items semantically in the positive direction. 
+
+All variables, scales, and measures employed in this study were acquired from student and parent self-report survey data from the first follow-up year of 2012.The eleventh grade mathematics composite standardized theta scores on an Algebra test were used as the dependent variable in this study. It was a test to measure students’ algebraic skills, understanding, and math problem solving (Ingels et al., 2011). The theta scores represent normal distribution and could be utilized to measure students’ achievement growth over time when longitudinal data are available (Ingels et al., 2011). The index of X2SES is a scale of socio-economic status composite, which is acquired from parent self-reported data and calculated using guardians’ education, occupation, and family income. This composite variable is standardized and a higher value indicates a higher socioeconomic status. Three latent variables were created in the current study by using exploratory and confirmation factor analyses: parental involvement, student’s perception of teacher support, peer influence.
+```{r }
+#check structure of the data set
+#str(df)
+
+#replace all the missing value by NA
+df[df < 0] <- NA
+
+#change column types
+df$X2SEX <- as.factor(df$X2SEX)
+df$X2DUALLANG<- as.factor(df$X2DUALLANG)
+df$X2MOMEDU<- as.factor(df$X2MOMEDU)
+df$X2DADEDU <- as.factor(df$X2DADEDU) 
+df$X2FAMINCOME<- as.factor(df$X2FAMINCOME)
+df$X2CONTROL<- as.factor(df$X2CONTROL)
+df$X2LOCALE<- as.factor(df$X2LOCALE)
+df$X2REGION<- as.factor(df$X2REGION)
+df$Peer_influence <- as.numeric(df$Peer_influence)
+df$Teacher_support <- as.numeric(df$Teacher_support)
+df$Parents_Support <- as.numeric(df$Parents_Support)
+df$Teacher_support <- as.numeric(df$Teacher_support)
+df$Parents_Support <- as.numeric(df$Parents_Support)
+df$X4ENTRYMAJ23<- as.factor(df$X4ENTRYMAJ23)
+
+#check the structure of the data set.
+str(df)
+```
+##2.3 Test Nature of data
+Our data set is longitudinal as mentioned before, there is a two-year record on the math score , the 9th grade math score and 11th grade math score. We first checked the distribution of the two-year math score.
+```{r}
+#subset the data by two years math score.
+norm_test <- df[c(2,6)]
+norm_test<-na.omit(norm_test)
+
+#plot the distribution plot using plotly package
+p_norm_test <- plot_ly(alpha = 0.6) %>%
+  add_histogram(x = norm_test$X1TXMTSCOR, 
+                color = I("navy"), 
+                name="9th grade math score") %>%
+  add_histogram(x = norm_test$X2TXMTSCOR, 
+                color = I("orange"), 
+                name="11th grade math score") %>%
+  layout(barmode = "overlay", title='Student math score distribution')%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+p_norm_test
+```
+The histogram shows that both 9th grade math score and 11th grade math score are normally distributed.   
+Then we generate a correlation table for the 9th grade math score, 11th grade math score and high school student final year total GPA.  
+
+```{r}
+#subset the data for correlation of the two years math score and final GPA.
+collect_test <- df[c("X1TXMTSCOR","X2TXMTSCOR","X3TAGPA12")]
+collect_test <- na.omit(collect_test)
+
+#change the column name.
+setnames(collect_test, old=c("X1TXMTSCOR","X2TXMTSCOR","X3TAGPA12"), new=c("9th grade \nmath score", "11th grade \nmath score", "Final year GPA"))
+
+#plot the mixed type correlation graph.
+corrplot.mixed(cor(collect_test))
+```
+
+From the table we can see that there is a postive correlation between the 11th grade student's math score and the high school final year GPA. So we are going to use the 11th grade math score to do our following analysis.
+
+#Chapter 3:Descriptive analysis and statistic analysis
+###3.1 SMART question: Does gender matters in high school students’ math performance?
+```{r}
+#subset the table for gender.
+gender_sub <- df[c(1,3,6)]
+gender_sub<-na.omit(gender_sub)
+
+#calculate the mean of gender group.
+mean_gender<- aggregate(X2TXMTSCOR~X2SEX,gender_sub,FUN="mean")
+
+#make box plot.
+p_gender <- ggplot(gender_sub,aes(x = X2SEX, y = X2TXMTSCOR, fill = X2SEX)) +
+  geom_boxplot(alpha = 0.5) +
+  labs(title = "Math score by gender", 
+       y = "Math score",
+       x = "Gender") +
+  theme(legend.position="none") +
+  ylim(c(20,85)) +
+  scale_x_discrete(labels=c("1" = "Girls", "2" = "Boys")) +
+  # add mean value on the plot.
+  stat_summary(fun.y="mean", colour="red", geom="point") + 
+  geom_text(data=mean_gender,aes(label= round(X2TXMTSCOR, 3),y=X2TXMTSCOR+2))
+#use plotly package to show the plot
+ggplotly(p_gender)%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+```
+
+```{r}
+#calculate sd of the gender group.
+gender_boy <- subset(gender_sub, X2SEX ==1, select=c("X2TXMTSCOR"))
+gender_girl <- subset(gender_sub, X2SEX ==2, select=c("X2TXMTSCOR"))
+```
+The boxplot shows the math score distribution for high school girls and boys . We can see the average score of the two groups are almost the same, only 0.2 differences. The standard deviation for girl's group is `r sd(unlist(gender_girl))`, for boy's group is `r sd(unlist(gender_boy))`, which means that the math score spread for girl's group is larger than the boy's group.   
+Below we generate a two-sample t-test to confirm whether there is no difference in math score between the two groups.
+
+####Two-Sample T-test
+####H0: Girl's and boy's groups math mean score are the same.
+####H1: Girl's and boy's groups math mean score are not same.
+```{r}
+#generate the twosample t-test for gender group.
+twoSample_gender <- t.test(gender_sub$X2TXMTSCOR ~ gender_sub$X2SEX, alternative = "two.sided")
+twoSample_gender
+```
+The p-value `r format(twoSample_gender$p.value)` is larger than 0.05, so we fail to reject null hypothesis.So we can conclude that gender does not matter for student math performance. In other words, math is not to perceive as a “male subject”.
+
+###3.2 SMART question: Does the first language influence student’s math performance?
+```{r}
+#change data type to factor and modify the level's name.
+df$X2DUALLANG <- factor(df$X2DUALLANG,
+levels = c(1,2,3),
+labels = c("English","non-English","Equally"))
+
+#subset the data. 
+language_sub <- df[c(1,5,6)]
+language_sub <- na.omit(language_sub)
+
+#calculate the mean of by different language group.
+mean_languate <- aggregate(X2TXMTSCOR~X2DUALLANG,language_sub,FUN="mean")
+
+#make box plot. 
+p_language <- ggplot(language_sub,aes(x = X2DUALLANG, y = X2TXMTSCOR, fill = X2DUALLANG)) +
+  geom_boxplot(alpha = 0.5) +
+  labs(title = "Math score by first speaking language", 
+       y = "Math score",
+       x = "Native language") +
+  theme(legend.position="none") +
+  ylim(c(20,85)) +
+  # add mean value on the plot.
+  stat_summary(fun.y="mean", colour="red", geom="point") + 
+  geom_text(data=mean_languate,aes(label= round(X2TXMTSCOR, 3),y=X2TXMTSCOR+2))
+#use plotly package to show the plot
+ggplotly(p_language)%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+```
+Student here are divided into three groups in which their mother language is English, non-English and Bilingual(English and non-English equally). The boxplots shows a slight increase from the left to the right. Below we conduct an ANOVA test to check the statistical result.   
+
+####ANOVA test
+####H0:different first language group has the same mean in math score.   
+####H1:different first language group has different mean in math score. 
+```{r}
+#generate ANOVA test for language group.
+AnovaDU <- aov( X2TXMTSCOR~df$X2DUALLANG , data=df)
+summary(AnovaDU)
+```
+Since p < 0.05, we reject the null hypothesis and conclude that the mean of students' math score is significantly different for at least one of the first language groups. Note that the ANOVA alone does not tell us specifically that which mean is different from one another. To determine that, we need to do multiple comparison (or post-hoc) tests.   
+```{r}
+#generate tukey test for language group.
+tukeyAnovaDU <- TukeyHSD(AnovaDU)
+tukeyAnovaDU
+```
+
+A post hoc test revealed that there is no statistically significant difference between the English and non-English group, as their p-value is 0.3485 > 0.05.  
+And we can conclude that students whose first language is English and non-English perform equally in math, and students from the bilingual group perform better than the other two groups.  
+
+###3.3 SMART question:Does the students' math score differ by school background?
+We classified school background into 3 aspects: private and public, school location(city, suburb, town, rural),and school geograpical location(northeast, midwest, south, west).  
+```{r}
+#change data type to factor and modify the level's name.
+df$X2CONTROL <- factor(df$X2CONTROL, 
+                      levels = c(1,2),
+                      labels = c("Public", "Private"))
+df$X2LOCALE <- factor(df$X2LOCALE,
+                      levels = c(1,2,3,4),
+                      labels = c("City", "Suburb", "Town","Rural"))
+df$X2REGION <- factor(df$X2REGION,
+                      levels = c(1,2,3,4),
+                      labels = c("Northeast","Midwest","South","West"))
+
+#subset the data. 
+school_sub <- df[c("STU_ID","X2TXMTSCOR", "X2CONTROL", "X2LOCALE", "X2REGION")]
+school_sub<-na.omit(school_sub)
+
+#calculate the mean by control, location and region.
+mean_control <- aggregate(X2TXMTSCOR ~ X2CONTROL,school_sub, FUN = "mean")
+mean_locate <- aggregate(X2TXMTSCOR ~ X2LOCALE,school_sub, FUN = "mean")
+mean_region <- aggregate(X2TXMTSCOR ~ X2REGION,school_sub, FUN = "mean")
+
+#box plot private&public
+p_pp <- ggplot(school_sub,aes(x = X2CONTROL, y = X2TXMTSCOR, fill = X2CONTROL)) +
+  geom_boxplot(alpha = 0.5) +
+  labs(title = "Math score by school type(private/public)", 
+       y = "Math score",
+       x = "school type") +
+  theme(legend.position="none") +
+  ylim(c(20,85)) +
+  # add mean value on the plot.
+  stat_summary(fun.y="mean", colour="red", geom="point") + 
+  geom_text(data=mean_control,aes(label= round(X2TXMTSCOR, 3),y=X2TXMTSCOR+3))
+#use plotly package to show the plot
+ggplotly(p_pp)%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+```
+The boxplot shows that private school students' math average score is obviously higher than public school student. A t-test is conducted below to prove the result.  
+
+####Two-Sample T-test
+####H0: Private school and public school student' math average score are the same.
+####H1: Private school and public school student' math average score are not same.
+```{r}
+#generate twosample t-test to private and public school student's score. 
+twoSample_control <- t.test(school_sub$X2TXMTSCOR ~ school_sub$X2CONTROL, alternative = "two.sided")
+twoSample_control
+```
+The t-test shows that the p-value is much less than 0.05. We reject the null hypothesis, and conclude that private school students do perform better than the public school student in math. The average math score of private school is about 5 points higher than the public school student's math score.  
+
+```{r}
+#box plot city&urban
+p_local <- ggplot(school_sub,aes(x = X2LOCALE, y = X2TXMTSCOR, fill = X2LOCALE)) +
+  geom_boxplot(alpha = 0.5) +
+  labs(title = "Math score by school location", 
+       y = "Math score",
+       x = "school location") +
+  theme(legend.position="none") +
+  ylim(c(20,85)) +
+  # add mean value on the plot.
+  stat_summary(fun.y="mean", colour="red", geom="point") + 
+  geom_text(data=mean_locate,aes(label= round(X2TXMTSCOR, 3),y=X2TXMTSCOR+3))
+#use plotly package to show the plot
+ggplotly(p_local)%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+```
+The boxplot shows that there are differnces in math performance between different groups, and an ANOVA test is used to prove that.   
+
+####ANOVA test
+####H0:different location groups has the same mean in math score.   
+####H1:different location groups has different mean in math score. 
+```{r}
+#generate ANOVA test for school location group.
+Anovalo <- aov( X2TXMTSCOR~X2LOCALE , data=df)
+summary(Anovalo)
+```
+From the ANOVA test, since p-value < 0.05, we reject the null hypothesis and conclude that there must be at least one group of the school location in which students' math average score is significantly different from the other groups.   
+
+```{r}
+#generate tukey test for school location group.
+tukeyAnovalo <- TukeyHSD(Anovalo)
+tukeyAnovalo
+```
+The tukey test revealed that only town-rural pair's p-value is larger than 0.05, so there is no statistically significant difference between the town and rural groups. But all the other pairs' p-value are smaller than 0.05, which indicate they all have significant differences in math score. 
+For conclusion, students studying in city perform the best in math, students in suburb perform the second, and students in rural and town are tied in the third place.  
+
+```{r}
+#boxplot by school geographical location.
+p_geo <- ggplot(school_sub,aes(x = X2REGION, y = X2TXMTSCOR, fill = X2REGION)) +
+  geom_boxplot(alpha = 0.5) +
+  labs(title = "Math score by school geograpical location", 
+       y = "Math score",
+       x = "school location") +
+  theme(legend.position="none") +
+  ylim(c(20,85)) +
+  # add mean value on the plot.
+  stat_summary(fun.y="mean", colour="red", geom="point") + 
+  geom_text(data=mean_region,aes(label= round(X2TXMTSCOR, 3),y=X2TXMTSCOR+3))
+#use plotly package to show the plot
+ggplotly(p_geo)%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+```
+
+For geographical location, students are divided into 4 groups. From the boxplot, we can see that student math performance differ by different groups, but some groups seem to have a similar average math score. Below an ANOVA test is conducted to check in detail.   
+
+####ANOVA test
+####H0:different geographical location groups has the same mean in math score.   
+####H1:different geographical location groups has different mean in math score.
+```{r}
+#generate ANOVA test for school geographical location group.
+AnovaRe <- aov( X2TXMTSCOR~df$X2REGION , data=df)
+summary(AnovaRe)
+```
+
+Since p < 0.05, we reject the null hypothesis and conclude that the mean of students' math score is significantly different for at least one of the school geographic region groups. 
+
+```{r}
+#generate tukey test for school geographical location group.
+tukeyAnovaRe <- TukeyHSD(AnovaRe)
+tukeyAnovaRe
+```
+A post hoc test reveals that south-west region pair has equal math average score as the p-value is larger than 0.05, and all the other pairs have differences in math average score.   
+So a conclusion can be given: Students in northeast have the highest math average score, midwest students have the second high math average score, and students in west and south perform equally on the third rank.    
+
+The map-plot below shows the math score distribution of the four geograpical group. The darker the color the higher the math score.    
+```{r}
+#import map data.
+map_data <- read_excel("mapdata.xlsx")
+# give state boundaries a white border
+l <- list(color = toRGB("white"), width = 2)
+# specify some map projection/options
+g <- list(scope = 'usa',
+          projection = list(type = 'albers usa'), 
+          showlakes = TRUE,
+          lakecolor = toRGB('white'))
+# plot geo map using plotly package.
+p_map <- plot_geo(map_data, locationmode = 'USA-states') %>%
+  add_trace(z = ~mathscore,text= ~code, locations = ~code,
+            color = ~mathscore, colors = 'Purples') %>%
+  colorbar(title = "math score") %>%
+  layout(title = 'students math score by geographical location', geo = g)%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+p_map 
+```
+
+```{r pressure, echo=FALSE, out.width = '80%'}
+#insert top university graph from local. 
+knitr::include_graphics("top universities.jpg")
+```
+
+Compare the map-plot with the USNEWS best college distribution map, we can see an apparent consistency between the two graphs. Better college means higher education, higher income, and higher socioeconomic status. And the students in these "higher" group perform better in math than other groups. As for whether there exists a correlation,  we will discuss in the following paragraph.   
+
+### 3.4 SMART question: Does mother’s or father’s education level and family income level are related to students’ math score?
+Social economic status is the social standing or class of an individual or group. It is often measured as a combination of education, income, and occupation. 
+
+Here, we are keen to look in to 3 aspects: "mothers's education", "father's education" (categorized as Below high school, High school, Certificate, Associate, Bachelor, Master, Ph.D.) and "family income" (ranging from $35,000.00 - $23,5000.00). The following boxplot graphs are drawn to shows if the parents education, and family income are related to students's maths score achievement in high school or not. 
+```{r}
+#subset the data by father, mother education, income and SES.
+family_sub <- df[c("STU_ID", "X2TXMTSCOR", "X2MOMEDU", "X2DADEDU","X2FAMINCOME","X2SES")]
+family_sub<-na.omit(family_sub)
+
+#calculate mean of different group
+mean_edumom <- aggregate(X2TXMTSCOR ~ X2MOMEDU,family_sub, FUN = "mean")
+mean_edudad <- aggregate(X2TXMTSCOR ~ X2DADEDU,family_sub, FUN = "mean")
+mean_income <- aggregate(X2TXMTSCOR ~ X2FAMINCOME,family_sub, FUN = "mean")
+                    
+#change lable name. 
+label_education <- c("1"="Below high school",
+                     "2"="High school",
+                     "3"="Certificate",
+                     "4"="Associate",
+                     "5"="Bachelor", 
+                     "6"="Master",
+                     "7"="Ph.D.")
+#make box plot by mother education level
+p_mother <- ggplot(family_sub,aes(x = X2MOMEDU, y = X2TXMTSCOR, fill = X2MOMEDU)) +
+  geom_boxplot(alpha = 0.5) +
+  labs(title = "Math score by Mother's education level", 
+       y = "Math score",
+       x = "Mother's education level") +
+  theme(legend.position="none") +
+  scale_x_discrete(labels=label_education) +
+  ylim(c(20,85)) +
+  # add mean value on the plot.
+  stat_summary(fun.y="mean", colour="red", geom="point") + 
+  geom_text(data=mean_edumom,aes(label= round(X2TXMTSCOR, 3),y=X2TXMTSCOR+4))
+#use plotly package to show the plot
+ggplotly(p_mother)%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+```
+
+
+```{r}
+#make box plot by father education level.
+p_father <- ggplot(family_sub,aes(x = X2DADEDU, y = X2TXMTSCOR, fill = X2DADEDU)) +
+  geom_boxplot(alpha = 0.5) +
+  labs(title = "Math score by Father's education level", 
+       y = "Math score",
+       x = "Father's education level") +
+  theme(legend.position="none") +
+  scale_x_discrete(labels=label_education) +
+  ylim(c(20,85)) +
+  # add mean value on the plot.
+  stat_summary(fun.y="mean", colour="red", geom="point") + 
+  geom_text(data=mean_edudad,aes(label= round(X2TXMTSCOR, 3),y=X2TXMTSCOR+3))
+#use plotly package to show the plot
+ggplotly(p_father)%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+```
+
+From the above graphs, we can see that higher the mother's or father's education, higher is the average maths score achievement of students in high school. The trend of the graph also show the rise in the average maths score achievement with the increase in the education level.
+
+
+```{r}
+#make box plot by family income
+p_income <- ggplot(family_sub,aes(x = X2FAMINCOME, y = X2TXMTSCOR, fill = X2FAMINCOME)) +
+  geom_boxplot(alpha = 0.5) +
+  labs(title = "Math score by family income level", 
+       y = "Math score",
+       x = "Family income level") +
+  #change the label name. 
+  scale_x_discrete(labels=c("1" = ">>>", 
+                            "2" = "$35000",
+                            "3" = "-----------",
+                            "4" = "-----------",
+                            "5" = "-----------",
+                            "6" = "-----------",
+                            "7" = "-----------",
+                            "8" = "-----------",
+                            "9" = "-----------",
+                            "10" = "-----------",
+                            "11" = "-----------", 
+                            "12" = "$235000",
+                            "13" = "<<<")) +
+  theme(legend.position="none") +
+  ylim(c(20,85))
+  #add mean value on the plot.
+  #stat_summary(fun.y="mean", colour="red", geom="point") +
+  #geom_text(data=mean_income,aes(label= round(X2TXMTSCOR, 3),y=X2TXMTSCOR+3))
+#use plotly package to show the plot
+ggplotly(p_income)%>%
+  #remove the control-bar in the plot output.
+  config(displayModeBar = F)
+```
+
+The above graph also shows that students having higher family income tends to have higher average maths score in high school.
+
+In the order to justify and understand the clear picture of the correlation, we used the correlation test to check how much the mother's education, fathers's education and family income are correlated to student's maths score achievement and which one is correlated the most.
+
+```{r}
+#subset data for correlation plot and rename the column names.
+family_cor <- setnames(family_sub[2:5], old=c("X2TXMTSCOR","X2MOMEDU","X2DADEDU","X2FAMINCOME"), new=c("Math score", "Mother Education level", "Father Education level", "Family income"))
+
+#education level and family income correlation test.
+family_cor <- data.frame(sapply(family_cor, function(x) as.numeric(as.character(x))))
+corrplot(cor(family_cor), type="lower", method = "circle", tl.cex = 1, tl.srt=0)
+```
+
+From the correlation table, we can see that there is the positive correlation between the students maths score and social economic status of the students (mother's education, father's education level & family income). In comparison, Father's education level has larger impact on student's math score.
+
+
+###3.5 SMART question: Peer, Teachers and Parents, which one affects students’ math score most?
+Here, we are keen to look into the influence of external factors on students maths score achievement. We have categorized external factors in to 3 parts: "Peer influence" (classmates and fellows, their grades, plans for entrance tests, and admission in to 4 year college degree), "Teachers support" (teaching methodology), and "Parents support" (involvement and discussions for college entrance exams, and application submissions into career courses).  
+
+```{r}
+#subset the data for peer, teacher and parents impact.
+PTP_subset <- df[c(6,44,45,46)]
+PTP_subset<- na.omit(PTP_subset)
+#rename the column name.
+setnames(PTP_subset, old=c("X2TXMTSCOR"), new=c("Math score"))
+#make the correlation plot.
+PTP_COR <- cor(PTP_subset)
+corrplot(PTP_COR, type="full", method = "number", tl.cex = 1, tl.srt=10)
+```
+
+The above correlation plot shows that both peer and parents support has equal influence and are more correlated with student's math score in comparison to teachers influence. However, to know which factor has most affect, Linear Regression is performed for more clear interpretation.
+
+####LINEAR REGRESSION
+```{r}
+#generate regression model. 
+regression <- lm(formula = X2TXMTSCOR ~ Peer_influence + Teacher_support + Parents_Support, data = df, x = TRUE)
+summary(regression)
+```
+The multiple regression model with these THREE predictors (Peer, Teacher support, Parents support) at default 95% confidence interval has produced F(3, 6543) = 201.2, p < 0.05 significant value. As can be seen, all these three factors significantly influence students' math achievment, however the students' peer inflence had highest significant regression weights, after controlling for the other variables in the model.
+
+
+###3.6 SMART question:Which factor affects students’ math score most(SES, student math identity, other parties support)? 
+The Linear Regression model below is performed to find out the most influencing and affecting factor among SES (includes parents education, income and occupation), students math identity (students motivation factors like their performance, and efficiency of understanding maths), and other parties support (peer influence, teachers influence, parents support).
+
+####Model 1:
+```{r linear gression}
+# generate a regression to test the most essential factor impact on student math performance.
+regression <- lm(formula = X2TXMTSCOR ~ X2SES + X2MTHID + X2MTHEFF + Peer_influence + Teacher_support + Parents_Support, data = df, x = TRUE)
+summary(regression)
+vif(regression)
+```
+
+The above multiple regression model with these predictors produced F(6, 1710) = 67.59 with some p-values p > 0.05 at default 95% confidence interval. So, we will try to predict another linear regression model, after controlling insignificant valued variables.
+
+####Model 2:
+```{r}
+# find the better model
+regression <- lm(formula = X2TXMTSCOR ~ X2SES + X2MTHID + Peer_influence, data = df, x = TRUE)
+summary(regression)
+vif(regression)
+```
+R-squared is a statistical measure of how close the data are to the fitted regression line. Our data is related to social science where data is not static so, R-squared = 0.1916 indicates that there is 19.16% of variance which is good value for our kind of data. Moreover, Adjusted R-squared value is also improved from 0.1889 to 0.1912 by controlling the less significant variables.The Variance Inflation Factor (VIF) < 10 is also good and indicates no multicollinearity. 
+
+As can be seen, the students' SES background has highest & most significant regression weights and coefficient, after controlling for the other variables in the model. In additon, we can also see that the students' math identity also has positive significant regression weights, indicating students math scores will increase when students increase their math identity, after controlling for the other variables in the model.
+
+
+###3.7 SMART question: Is there any correlation between final year Math GPA and other final courses GPA? 
+For this question we will find the relation between the final year Math GPA and other courses GPA variables through the correlation plot.For this, we will find out the correlation between 11 variables subject like science, business and foreign languages etc with final year math GPA of the student. 
+
+```{r}
+#subset the 12 GPA columns to check correlation.
+gpa <- df%>%select("X3TGPAENG":"X3TGPASTEM")
+#rename the columns.
+setnames(gpa, old=c("X3TGPAENG", "X3TGPAMAT", "X3TGPASCI", "X3TGPASOCST", "X3TGPAART", "X3TGPALANG", "X3TGPAHELPE", "X3TGPACOMPSCI", "X3TGPABUS", "X3TGPAMISC", "X3TGPAACAD", "X3TGPASTEM"), new=c("Eng", "Math", "Sci", "  SoSci", "Arts", "    F langu", "PE", "  Comp", "Busi", "  Music", "Total", "  STEM"))
+#reorder the column.
+gpa <- gpa[,c(2,1,3:12)]
+gpa<-na.omit(gpa)
+#make the correlation plot. 
+gpa_cor <- cor(gpa)
+corrplot.mixed(gpa_cor)
+```
+
+As we can see through the correlation coefficients in the corrplot, Math GPA is highly correlated with STEM (Science, technology, engineering, and mathematics) score which are the college deciding scores. The higher the math GPA, of the student the higher chance student, get a high total score. Also, the top 4 highly correlated courses to Math are Science, English, Social Science, and Foreign language. On the contrary, subjects like computer science or business have less correlation with the Maths GPA on the plot
+
+###3.8 SMART question: What is the most chosen major in college for students who are good at math in high school?
+We will use the bar charts to find out the most chosen majors in college for students who are good in maths. We have taken Student ID, Student Maths Score and the Major student think they will consider after completing High school as the variables here. We have created 2 bar charts here- Graph 1 shows the most chosen major in college after high school & Graph 2 shows the major chosen by the student with the top 25 % of maths score.
+
+```{r}
+#subset the data.
+major_sub <- df[c("STU_ID", "X2TXMTSCOR", "X4ENTRYMAJ23")]
+major_sub<-na.omit(major_sub)
+#use quantile function to check the top 25% student's math score. 
+#quantile(major_sub$X2TXMTSCOR)
+#select the top 25% math score.
+major_top <- subset(major_sub, X2TXMTSCOR >= 62.24733)
+#set label.
+label_major <- c("Computer and information science",
+                "Engineering",
+                "Biological,physical science",
+                "Mathematics",
+                "Agriculture and natural resources",
+                "General studies", 
+                "Social science", 
+                "Psychology",
+                "Humanities",
+                "History",
+                "Personal and consumer services",
+                "Manufacturing, construction",
+                "Military technology",
+                "Health care fields",
+                "Business",
+                "Education",
+                "Architecture",
+                "Communications",
+                "Public administration",
+                "Design and applied arts",
+                "Law and legal studies",
+                "Library sciences",
+                "Tehology and religious voations")
+#make the bar chart for all student's major selection.
+p_major1 <- ggplot(major_sub,
+                   aes(x = as.factor(X4ENTRYMAJ23), 
+                   fill = as.factor(X4ENTRYMAJ23))) +
+  geom_bar(alpha = 0.5) +
+  #make the bar chart horizontal.
+  coord_flip() +
+  labs(title = "Major select for all student(Graph1)", 
+       y = "Count",
+       x = "Majors",
+       fill = "Majors") +
+  #add mean value on the plot.
+  scale_x_discrete(labels = label_major)+
+  theme(legend.position = "None")
+#make the bar chart for top 25% math student's major selection.
+p_major2 <- ggplot(major_top,
+                   aes(x = as.factor(X4ENTRYMAJ23), 
+                   fill = as.factor(X4ENTRYMAJ23))) +
+  geom_bar(alpha = 0.5) +
+  #make the bar chart horizontal.
+  coord_flip() +
+  labs(title = "Major select for top 25%(Graph 2)", 
+       y = "Count",
+       x = "Majors",
+       fill = "Majors") +
+  #add mean value on the plot.
+  scale_x_discrete(labels = label_major)+
+  theme(legend.position = "None")
+p_major1
+p_major2
+```
+
+As we can see from the bar charts the students in high school choose  majors like  Business, Healthcare field, Biological physical sciences, and Engineering in university when they pursue further education. Although when we see the data for students with top 25 % maths score through graph 2 the results show that biological sciences & engineering are the main majors selected by the students.
+
+
+#Chapter 4: Data limitation
+The study is designed upon follow up questionnaire and interactions with the Students,Parents,Teachers ,Counselors,School Administrators.However, failure to answer those questionnaires or incorrect answering could lead to data inaccuracy or if there could be some missing entries in the dataset, it would impact overall analysis. 
+
+
+#Chapter 5: Conclusion
+In conclusion, dataset  focuses  on how students plan and make decisions about postsecondary options.
+There are many outcomes that we can derive from the analysis of the effects of different factors on high school student's math achievement, and how does it affect their postsecondary study. We can observe through the test that gender does not affect the student’s math score and a student whose father or mother has a higher education level tends to have a higher math score in the high school. Father education level has a larger impact on students math score while language also makes a difference in the scores. A student whose family income level is higher tends to have a higher math score in high school. Besides, a student’s math score in private school is always higher than the student’s math score in public school. School locations correlate with student's math performance. By comparing the different factors', We can conclude that socioeconomic status, student's own math motivation and peer's support in math study affect the achievements of the students most. Student math achievement affect their future choices greatly.
+
+
+#Bibliography
+Abadi.M and Kiersz.A(2018), Exactly which states are in the Northeast, Midwest, South, and West, according to the US government, Business insider. Access at <https://www.businessinsider.com/united-states-regions-new-england-midwest-south-2018-4#and-west-south-central-includes-the-western-most-states-in-the-south-10>
+
+Boyington.B.(2018),, Where to Find the 2019 U.S. News Best Colleges,U.S.News. Access at <https://www.usnews.com/education/best-colleges/articles/2018-09-11/where-to-find-the-2019-us-news-best-colleges>
+
+Chaudhry.M.(2015), College Success Starts In Math Class, Forbes. Access at <https://www.forbes.com/sites/schoolboard/2015/05/08/college-success-starts-in-8th-grade-math-class/#3d775c17248e>
+
+Cvencek, D., Meltzoff, A. N., & Greenwald, A. G. (2011). Math–gender stereotypes in elementary school children. Child development.
+
+Math milestones: The critical role of math achievement in student success, Renaissance. Access at <https://www.renaissance.com/2018/03/22/blog-math-milestones-critical-role-math-achievement-student-success/>
